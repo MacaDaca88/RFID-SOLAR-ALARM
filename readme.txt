@@ -24,4 +24,6 @@ look me up im MacaDaca88 on all socials all gaming platforms
 
 
 Bitcoin Donations accepted and appreciated
+Bitcoin address == bc1quaxshsghuta2s4whaw0g7t4zcdgrek6x3zqynd
+
 email  @  Macadaca88@outlook.com
