@@ -23,6 +23,7 @@
 #include <Servo.h>
 #include <EEPROM.h>
 #include <FastLED_NeoPixel.h>
+
 #define reed 7
 #define RST_PIN 43
 #define SS_PIN 53
@@ -87,8 +88,8 @@ void setup() {
   pinMode(green, OUTPUT);
   pinMode(blue, OUTPUT);
   pinMode(usb, OUTPUT);
-  pinMode(20, INPUT_PULLUP);
-  pinMode(21, INPUT_PULLUP);
+  pinMode(5, INPUT);
+  pinMode(6, INPUT);
 
   digitalWrite(trigger_pin, LOW);
   digitalWrite(red, HIGH);
