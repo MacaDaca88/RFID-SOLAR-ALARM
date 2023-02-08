@@ -1,3 +1,4 @@
+
 /*
   Typical pin layout used:
   -----------------------------------------------------------------------------------------
@@ -14,6 +15,8 @@
   More pin layouts for other boards can be found here: https://github.com/miguelbalboa/rfid#pin-layout
 */
 
+#include <DHT.h>
+#include <DHT_U.h>
 #include <SPI.h>
 #include <MFRC522.h>
 #include <LCD_I2C.h>
@@ -28,7 +31,7 @@
 #define blue A5
 #define led A2
 #define usb 4
-
+#define DHTPIN 2  
 
 #define DATA_PIN A1  // data line for led
 #define NUM_LEDS 32  // leds used on this line
@@ -53,11 +56,12 @@ int i = 0;
 unsigned long previousMillis = 0;
 unsigned long currentMillis = millis();
 const long interval = 1000;
+uint32_t delayMS;
 
+#define DHTTYPE    DHT11     // DHT 11
 Adafruit_NeoPixel strip(NUM_LEDS, DATA_PIN, NEO_GRB);
-// Create instances
 MFRC522 mfrc522(SS_PIN, RST_PIN);
-
+DHT_Unified dht(DHTPIN, DHTTYPE);
 LCD_I2C lcd(0x27, 20, 4);
 Servo myServo;             // Servo motor
 
@@ -92,6 +96,33 @@ void setup() {
   digitalWrite(blue, HIGH);
   digitalWrite(usb, LOW);
   digitalWrite(led, LOW);
+    dht.begin();
+  Serial.println(F("DHTxx Unified Sensor Example"));
+  // Print temperature sensor details.
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+  Serial.println(F("------------------------------------"));
+  Serial.println(F("Temperature Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("°C"));
+  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("°C"));
+  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("°C"));
+  Serial.println(F("------------------------------------"));
+  // Print humidity sensor details.
+  dht.humidity().getSensor(&sensor);
+  Serial.println(F("Humidity Sensor"));
+  Serial.print  (F("Sensor Type: ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:  ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:   ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:   ")); Serial.print(sensor.max_value); Serial.println(F("%"));
+  Serial.print  (F("Min Value:   ")); Serial.print(sensor.min_value); Serial.println(F("%"));
+  Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
+  Serial.println(F("------------------------------------"));
+  // Set delay between sensor readings based on sensor details.
+  delayMS = sensor.min_delay / 1000;
+
   myServo.write(0);  // Initiate locked position of the servo motor
   int lockbuttonval = digitalRead(6);
   lcd.setCursor(0, 0);
@@ -356,6 +387,29 @@ void loop() {
   pulse_duration = pulseIn(echo_pin, HIGH);
 
   distance = round(pulse_duration * 0.0171);
+  // Delay between measurements.
+  delay(delayMS);
+  // Get temperature event and print its value.
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println(F("Error reading temperature!"));
+  }
+  else {
+    Serial.print(F("Temperature: "));
+    Serial.print(event.temperature);
+    Serial.println(F("°C"));
+  }
+  // Get humidity event and print its value.
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println(F("Error reading humidity!"));
+  }
+  else {
+    Serial.print(F("Humidity: "));
+    Serial.print(event.relative_humidity);
+    Serial.println(F("%"));
+  }
 
   Serial.print("distance = ");
   Serial.print(distance);
